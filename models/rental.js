@@ -63,8 +63,8 @@ const Rental = mongoose.model('Rental', new mongoose.Schema ({
 // Es sollen vom Customer nur seine ID und Movie übergeben werden bei der Ausleihe, alles andere wird vom Server gesetzt
 function validateRental(rental) {
     const schema = {
-        customerId: Joi.String().required(),
-        movieId: Joi.String().required()
+        customerId: Joi.objectId().required(),
+        movieId: Joi.objectId().required()
     };
     return Joi.validate(rental, schema);
 };

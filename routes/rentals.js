@@ -1,14 +1,13 @@
-// POST nach /api/rentals
-// Get the list of rentals
-// GET /api/rentals
 // Build an endpoint to manage the rentals
-
 const {Rental, validate} = require('../models/rental');
-const{Movie: Rental} = require('../models/movie');
-const{Customer} = require('../models/customer');
+const {Movie} = require('../models/movie');
+const {Customer} = require('../models/customer');
 const mongoose = require('mongoose');
+const Fawn = require('fawn');
 const express = require('express');
 const router = express.Router();
+
+Fawn.init(mongoose);
 
 // Get the list of rentals
 router.get('/', async (req, res) => {
@@ -35,14 +34,24 @@ router.post('/', async (req, res) => {
         movie: {
             _id: movie._id,
             title: movie.title,
-            dailyRentalRate: moviel.dailyRentalRate
+            dailyRentalRate: movie.dailyRentalRate
         }
     });
-    rental = await rental.save();
-    movie.numberInStock--;
-    movie.save();
-    res.send(rental);
+    
+    try {
+        new Fawn.Task()
+            .save('rentals', rental)
+            .update('movies', { _id: movie._id }, {
+                $inc: { numberInStock: -1 }
+            })
+            .run();        
+        res.send(rental);       
+    }
+    catch(ex) {
+        res.status(500).send('Something failed.');
+    }
 });
+    
 
 // Get a single movie
 router.get('/:id', async (req, res) => {
