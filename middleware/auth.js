@@ -7,7 +7,7 @@ module.exports = function (req, res, next) {
 
     // If token is not valid it will throw an exception >> therefore the try block
     try {
-        const decoded = jwt.verify(token, config.get('jwtPrivateKey'));
+        const decoded = jwt.verify(token, config.get('jwtPrivateKey'));  // Mit PrivateKey kann ich das Token dekodieren
         req.user = decoded;
         next();
     } 

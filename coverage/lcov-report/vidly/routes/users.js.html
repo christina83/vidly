@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for vidly/routes/users.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">All files</a> / <a href="index.html">vidly/routes</a> users.js
+    </h1>
+    <div class='clearfix'>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// Build an endpoint to manage the users
+const auth = require('../middleware/auth');
+const bcrypt = require('bcryptjs');
+const _ = require('lodash');
+const {User, validate} = require('../models/user');
+const mongoose = require('mongoose');
+const express = require('express');
+const router = express.Router();
+&nbsp;
+// Wenn auth fehlschlägt, kommt man nie bis zu async
+router.get('/me', auth, <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
+    const user = <span class="cstat-no" title="statement not covered" >await User.findById(req.user._id).select('-password');</span>  // Die ID nicht aus URL, sondern aus Webtoken entnehmen, sicherer
+<span class="cstat-no" title="statement not covered" >    res.send(user);</span>
+});
+&nbsp;
+// Einen neuen User registrieren
+router.post('/', <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
+    const { error } = <span class="cstat-no" title="statement not covered" >validate(req.body);</span> // mit Joi wird der Input des Users validiert 
+<span class="cstat-no" title="statement not covered" >    if (error) <span class="cstat-no" title="statement not covered" >return res.status(400).send(error.details[0].message); </span></span>// wenn es strukturell falsch war, Error
+&nbsp;
+    let user = <span class="cstat-no" title="statement not covered" >await User.findOne({ email: req.body.email });</span> // prüfen, ob in MongoDB schon ein User mit dieser Email existiert
+<span class="cstat-no" title="statement not covered" >    if (user) <span class="cstat-no" title="statement not covered" >return res.status(400).send('User already registered');</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    user = new User(_.pick(req.body, ['name', 'email', 'password']));</span>
+    const salt = <span class="cstat-no" title="statement not covered" >await bcrypt.genSalt(10);</span>
+<span class="cstat-no" title="statement not covered" >    user.password = await bcrypt.hash(user.password, salt); </span>// Das Passwort ist ab jetzt als Hash gespeichert
+<span class="cstat-no" title="statement not covered" >    await user.save(); </span>// await heißt: Wir machen erst weiter, wenn es gespeichert wurde. user ist eine "user-Instanz"
+&nbsp;
+    const token = <span class="cstat-no" title="statement not covered" >user.generateAuthToken();</span>
+<span class="cstat-no" title="statement not covered" >    res.header('x-auth-token', token).send(_.pick(user, ['_id', 'name', 'email'])); </span>// Das Passwort soll nicht zurückgegeben werden, weil geheim
+});
+&nbsp;
+&nbsp;
+module.exports = router;
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Fri Nov 12 2021 13:49:10 GMT+0100 (GMT+01:00)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>
