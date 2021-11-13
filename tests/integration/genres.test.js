@@ -117,4 +117,83 @@ describe('/api/genres', () => {
             expect(res.body).toHaveProperty('name', 'genre1');
         });
     });
+
+    // Test Suite 4
+    describe('PUT /:id', () => {
+        let token;
+        let newName;
+        let genre;
+        let id;
+        
+        const exec = async() => {
+            return await request(server)
+                .put('/api/genres/' + id)   // send the PUT request
+                .set('x-auth-token', token) // send the token to authenticate me
+                .send({ name: newName });   // send the new genre name
+        }
+
+        beforeEach( async() => {
+            genre = new Genre({ name: 'genre1' });  // I create the 'genre1' genre
+            await genre.save();                     // I try to save that genre in the database
+
+            token= new User().generateAuthToken();  // I create a token for a new user
+            id = genre._id;                         // I save the id from the created genre into a variable
+            newName = 'updatedName';                // I set the new genre name
+        });
+
+        it('should return 400 if genre is less than 5 characters', async () => {
+            newName = '1234'; // I create a Genre name with less than 5 characters
+
+            const res = await exec(); // I send a PUT request to the server with my token and the new Genre name
+
+            expect(res.status).toBe(400); // I proof if the response is as expected
+        });
+
+        it('should return 400 if genre is more than 50 characters', async () => {
+            newName = new Array(52).join('a'); // I create a Genre name with more than 50 characters
+
+            const res = await exec(); // I send a PUT request to the server with my token and the new Genre name
+
+            expect(res.status).toBe(400); // I proof if the response is as expected
+        });
+
+        it('should return 404 if id is invalid', async () => {
+            id = 1; // Set an invalid id
+
+            const res = await exec(); // I send a PUT request for a genre with that id
+
+            // FEHLER
+            expect(res.status).toBe(404); // I proof if the response says that this id cannot be found
+        });
+
+        it('should return 404 if genre with the given id was not found', async () => {
+            id = mongoose.Types.ObjectId(); // create an id with mongoose
+
+            const res = await exec(); // I send a PUT request for a genre with that id
+
+            expect(res.status).toBe(404); // I proof if the response says that this id cannot be found
+        });
+
+        // Happy path
+        it('should update the genre if input is valid', async () => {
+            await exec(); // I send a PUT request for a genre
+
+            const updatedGenre = await Genre.findById(genre._id); // I create a variable with content of genre object
+
+            expect(updatedGenre.name).toBe(newName); // I compare the genre name to test object in this class
+        });
+
+        // Happy path
+        it('should return the updated genre if it is valid', async () => {
+            const res = await exec();  // I send a PUT request for a genre with that id and save the response
+
+            expect(res.body).toHaveProperty('_id'); // I proof if the response contains the id of our test genre
+            expect(res.body).toHaveProperty('name', newName);
+        });
+    });
+
+    /* // Test Suite 5
+    describe('DELETE /', () => {
+
+    }); */
 });
