@@ -2,10 +2,11 @@
 
 const Joi = require('joi');
 const mongoose = require('mongoose');
+const moment = require('moment');
 
 
-// Create model und simultaneously the schema
-const Rental = mongoose.model('Rental', new mongoose.Schema ({
+// Create the schema
+const rentalSchema = new mongoose.Schema ({
     customer: {
         type: new mongoose.Schema ({  // weil ich nicht alle Attribute von customer übernehmen will 
             name: {
@@ -57,8 +58,24 @@ const Rental = mongoose.model('Rental', new mongoose.Schema ({
         type: Number,
         min: 0
     }
-}));
+});
 
+rentalSchema.statics.lookup = function(customerId, movieId) {
+    return this.findOne({
+        'customer._id': customerId,
+        'movie._id': movieId,
+    });
+}
+
+rentalSchema.methods.return = function() {
+    this.dateReturned = new Date();
+
+    const rentalDays = moment().diff(this.dateOut, 'days');
+    this.rentalFee = rentalDays * this.movie.dailyRentalRate;
+}
+
+// Create the model
+const Rental = mongoose.model('Rental', rentalSchema);
         
 // Es sollen vom Customer nur seine ID und Movie übergeben werden bei der Ausleihe, alles andere wird vom Server gesetzt
 function validateRental(rental) {
